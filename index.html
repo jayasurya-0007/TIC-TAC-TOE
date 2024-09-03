@@ -1,0 +1,189 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+     
+    <title> TIC TAC TOE !!</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #333;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .cell:hover {
+            background-color:blue;
+        }
+
+        .message {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: blue;
+        }
+
+        .choice-container {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic Tac Toe!</h1>
+    <div class="choice-container">
+        <button id="chooseX"> PLAY  AS  X</button>
+        <button id="chooseO">PLAY  AS  X</button>
+    </div>
+    <div class="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+    <div class="message" id="message"></div>
+    <button id="resetButton"> RESTART</button>
+
+    <script>
+        const cells = document.querySelectorAll('.cell');
+        const messageElement = document.getElementById('message');
+        const resetButton = document.getElementById('resetButton');
+        const chooseXButton = document.getElementById('chooseX');
+        const chooseOButton = document.getElementById('chooseO');
+        let currentPlayer = null;
+        let playerMarker = null;
+        let board = Array(9).fill(null);
+        let gameActive = false;
+
+        const winPatterns = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+            [0, 4, 8], [2, 4, 6] // diagonals
+        ];
+
+        function checkWinner() {
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return board[a];
+                }
+            }
+            return board.every(cell => cell) ? 'Tie' : null;
+        }
+
+        function handleClick(event) {
+            if (!gameActive || event.target.textContent) return;
+
+            const index = event.target.dataset.index;
+            if (playerMarker && (currentPlayer === playerMarker)) {
+                board[index] = currentPlayer;
+                event.target.textContent = currentPlayer;
+
+                const winner = checkWinner();
+                if (winner) {
+                    messageElement.textContent = winner === 'Tie' ? "It's a Tie!" : `${winner} Wins!`;
+                    gameActive = false;
+                    return;
+                }
+
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+
+                if (currentPlayer === 'O' && gameActive) {
+                    setTimeout(() => aiMove(), 500);
+                }
+            }
+        }
+
+        function aiMove() {
+            const emptyCells = board.map((val, index) => val === null ? index : null).filter(val => val !== null);
+            if (emptyCells.length === 0) return;
+
+            const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            board[randomIndex] = 'O';
+            cells[randomIndex].textContent = 'O';
+
+            const winner = checkWinner();
+            if (winner) {
+                messageElement.textContent = winner === 'Tie' ? "It's a Tie!" : `${winner} Wins!`;
+                gameActive = false;
+                return;
+            }
+
+            currentPlayer = 'X';
+        }
+
+        function resetGame() {
+            board = Array(9).fill(null);
+            gameActive = false;
+            currentPlayer = null;
+            playerMarker = null;
+            cells.forEach(cell => cell.textContent = '');
+            messageElement.textContent = '';
+            chooseXButton.disabled = false;
+            chooseOButton.disabled = false;
+        }
+
+        function startGame(marker) {
+            playerMarker = marker;
+            currentPlayer = 'X';
+            gameActive = true;
+            chooseXButton.disabled = true;
+            chooseOButton.disabled = true;
+            messageElement.textContent = `Player ${playerMarker}'s turn`;
+        }
+
+        chooseXButton.addEventListener('click', () => startGame('X'));
+        chooseOButton.addEventListener('click', () => startGame('O'));
+        cells.forEach(cell => cell.addEventListener('click', handleClick));
+        resetButton.addEventListener('click', resetGame);
+    </script>
+</body>
+</html>
